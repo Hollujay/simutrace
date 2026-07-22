@@ -1,6 +1,14 @@
 import { contract, rpc, xdr } from '@stellar/stellar-sdk';
 import type { ParsedFunction } from './types';
 
+function xdrTypeName(kind: xdr.ScSpecType): string {
+  const name = kind.name;
+  if (name.startsWith('scSpecType')) {
+    return name.charAt(10).toLowerCase() + name.slice(11);
+  }
+  return name;
+}
+
 function specTypeToStringShort(type: xdr.ScSpecTypeDef): string {
   const kind = type.switch();
   switch (kind) {
@@ -23,7 +31,7 @@ function specTypeToStringShort(type: xdr.ScSpecTypeDef): string {
     case xdr.ScSpecType.scSpecTypeUdt():
       return type.udt().toString();
     default:
-      return kind.name;
+      return xdrTypeName(kind);
   }
 }
 
@@ -47,7 +55,7 @@ function specTypeToString(type: xdr.ScSpecTypeDef): string {
     case xdr.ScSpecType.scSpecTypeUdt():
       return type.udt().toString();
     default:
-      return kind.name;
+      return xdrTypeName(kind);
   }
 }
 
