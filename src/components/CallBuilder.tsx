@@ -34,10 +34,18 @@ function parseArgValue(value: string, type: string): xdr.ScVal | null {
         return xdr.ScVal.scvU64(new xdr.Uint64(trimmed));
       case 'i64':
         return xdr.ScVal.scvI64(new xdr.Int64(trimmed));
-      case 'u128':
-        return xdr.ScVal.scvUint128(new xdr.Uint128(trimmed));
-      case 'i128':
-        return xdr.ScVal.scvInt128(new xdr.Int128(trimmed));
+      case 'u128': {
+        const parts = trimmed.split(',').map((s) => s.trim());
+        const lo = new xdr.Uint64(parts[0] || '0');
+        const hi = new xdr.Uint64(parts[1] || '0');
+        return xdr.ScVal.scvU128(new xdr.UInt128Parts({ lo, hi }));
+      }
+      case 'i128': {
+        const parts = trimmed.split(',').map((s) => s.trim());
+        const lo = new xdr.Uint64(parts[0] || '0');
+        const hi = new xdr.Int64(parts[1] || '0');
+        return xdr.ScVal.scvI128(new xdr.Int128Parts({ lo, hi }));
+      }
       case 'bool':
         if (trimmed === 'true') return xdr.ScVal.scvBool(true);
         if (trimmed === 'false') return xdr.ScVal.scvBool(false);
@@ -46,15 +54,20 @@ function parseArgValue(value: string, type: string): xdr.ScVal | null {
         return xdr.ScVal.scvString(trimmed);
       case 'symbol':
         return xdr.ScVal.scvSymbol(trimmed);
-      case 'address':
+      case 'address': {
         if (trimmed.startsWith('C')) {
+          const buf = StrKey.decodeContract(trimmed);
           return xdr.ScVal.scvAddress(
-            xdr.ScAddress.scAddressTypeContract(StrKey.decodeContract(trimmed)),
+            xdr.ScAddress.scAddressTypeContract(buf as unknown as xdr.ContractId),
           );
         }
+        const buf = StrKey.decodeEd25519PublicKey(trimmed);
         return xdr.ScVal.scvAddress(
-          xdr.ScAddress.scAddressTypeAccount(StrKey.decodeEd25519PublicKey(trimmed)),
+          xdr.ScAddress.scAddressTypeAccount(
+            xdr.PublicKey.publicKeyTypeEd25519(buf),
+          ),
         );
+      }
       default:
         return null;
     }

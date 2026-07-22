@@ -5,6 +5,7 @@ import {
   Networks,
   BASE_FEE,
   xdr,
+  Account,
 } from '@stellar/stellar-sdk';
 
 export async function simulateCall(
@@ -15,16 +16,11 @@ export async function simulateCall(
   sourceAccountId: string,
 ) {
   const contract = new Contract(contractId);
-  let sourceAccount;
+  let sourceAccount: Account;
   try {
     sourceAccount = await server.getAccount(sourceAccountId);
   } catch {
-    sourceAccount = {
-      accountId: () => sourceAccountId,
-      sequenceNumber: () => '0',
-      sequenceNumberToXDR: () => xdr.SequenceNumber.fromXDR('0', 'number'),
-      incrementSequenceNumber: () => {},
-    } as unknown as ReturnType<typeof rpc.Server.prototype.getAccount>;
+    sourceAccount = new Account(sourceAccountId, '0');
   }
 
   const tx = new TransactionBuilder(sourceAccount, {

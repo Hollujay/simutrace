@@ -1,4 +1,4 @@
-import { rpc, xdr, nativeToScVal, scValToNative } from '@stellar/stellar-sdk';
+import { rpc, xdr, scValToNative } from '@stellar/stellar-sdk';
 
 function ledgerEntryToStorageValue(entry: xdr.LedgerEntry): { key: string; value: unknown } | null {
   const data = entry.data();
