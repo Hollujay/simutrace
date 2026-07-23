@@ -1,48 +1,57 @@
 # SimuTrace
 
-**A browser-based tool that shows exactly how a Soroban smart contract call will change storage — before you ever submit a real transaction.**
+[![CI](https://github.com/Hollujay/simutrace/actions/workflows/ci.yml/badge.svg)](https://github.com/Hollujay/simutrace/actions/workflows/ci.yml)
 
-No wallet required. No signing. No mainnet writes.
+A browser-based tool that shows exactly how a Soroban smart contract call will change storage, before you submit a real transaction.
 
-## Scope
+## What this is (and isn't)
 
-[Stellar Lab's Contract Explorer](https://lab.stellar.org) already covers general contract inspection: contract info, spec browsing, source code, a static view of all storage entries, and simulating a call to see its result and fee. SimuTrace does **not** duplicate that.
+SimuTrace exists for one job: take a specific function call on a Soroban contract, simulate it, and show a clear before/after diff of the storage keys that call actually touches.
 
-SimuTrace exists for exactly one thing the official tool doesn't do:
+It does **not**:
 
-> Take one specific function call, simulate it, and show a clear **before/after diff of only the storage keys that call actually touches.**
+- Provide a general contract browser or spec viewer (see Stellar Lab's Contract Explorer for that)
+- Submit real transactions or request wallet signatures. All calls are read-only simulations.
+- Support Stellar Asset Contracts (SACs) yet. SACs have no deployed WASM, so the current spec-fetching approach doesn't work for them. Custom Soroban contracts are supported.
 
-Everything in this app serves that one job. If you need a general-purpose contract browser, use Stellar Lab.
+## Quick start
 
-## Quick Start
+Requires Node 22+.
 
 ```bash
+git clone https://github.com/Hollujay/simutrace.git
+cd simutrace
 npm install
 npm run dev
 ```
 
-Open the URL shown in your terminal (default `http://localhost:5173`). Paste a deployed Soroban contract ID (C... address) and pick a function to simulate.
+Open the local URL, paste a deployed custom Soroban contract address on testnet, pick a function, fill in its arguments, and simulate. If the call writes to storage, you'll see each affected key with its value before and after.
 
-## How it works
+Not yet deployed anywhere public; run it locally for now.
 
-1. **Fetch spec** — reads the contract's embedded WASM spec to know what functions exist and their argument types.
-2. **Build call** — you fill in the function arguments via a dynamic form.
-3. **Simulate** — calls `simulateTransaction` against the Soroban RPC endpoint. No real transaction is submitted, no wallet signing required.
-4. **Diff storage** — extracts the ledger keys the simulation footprint touched, reads their before/after values, and renders a diff.
+## Architecture
 
-## Tech Stack
+```
+ContractInput -> contractSpec.ts -> FunctionList -> CallBuilder
+                                                        |
+                                                        v
+                                              simulateCall (simulateCall.ts)
+                                                        |
+                                          +-------------+-------------+
+                                          v                           v
+                                  storageSnapshot.ts            SimulationResult
+                                  (before, via footprint)
+                                          |
+                                          v
+                                    diff.ts -> StorageDiff
+```
 
-- React 18, TypeScript 5 (strict), Vite 5
-- Tailwind CSS 3
-- `@stellar/stellar-sdk` for all Soroban RPC interactions
-- Vitest for unit tests
+The simulation's footprint tells us which storage keys a call would touch. We read those keys' current values before simulating, then diff them against the values the simulation returns. This is why only the keys a specific call touches can be diffed, not a contract's full storage.
 
-## Networks
+## Contributing
 
-- **Testnet** — works out of the box (`https://soroban-testnet.stellar.org`).
-- **Mainnet** — requires you to supply your own RPC provider URL. There is no stable public default.
-- **Custom** — any Soroban-compatible RPC endpoint.
+See CONTRIBUTING.md for setup and code style. Security issues should be reported privately, see SECURITY.md.
 
-## No Transaction Submission
+## Maintainer
 
-SimuTrace is explicitly **simulate-only**. No wallet integration, no `sendTransaction`, no signing. The only `TransactionBuilder` usage in the entire codebase is inside `simulateCall` which calls `simulateTransaction` exclusively. This is enforced by a test (`test/rpc.test.ts`).
+@Hollujay.
