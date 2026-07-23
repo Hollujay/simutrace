@@ -7,7 +7,6 @@ import { extractBeforeMap, extractAfterMap } from './lib/storageSnapshot';
 import { diffStorage } from './lib/diff';
 import { isLikelyCorsError } from './lib/corsDetection';
 import { NetworkSelector } from './components/NetworkSelector';
-import type { NetworkConfig } from './components/NetworkSelector';
 import { ContractInput } from './components/ContractInput';
 import { FunctionList } from './components/FunctionList';
 import { CallBuilder } from './components/CallBuilder';
@@ -31,7 +30,7 @@ function App() {
   const [status, setStatus] = useState<AppStatus>({ phase: 'idle' });
   const fetchingRef = useRef(false);
 
-  const handleNetworkChange = useCallback((newServer: rpc.Server, _network: NetworkConfig) => {
+  const handleNetworkChange = useCallback((newServer: rpc.Server) => {
     setServer(newServer);
     setContractId(null);
     setSelectedFunction(null);
