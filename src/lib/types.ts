@@ -1,9 +1,11 @@
 export type SimuTraceError =
   | { kind: 'contract-not-found'; contractId: string }
+  | { kind: 'sac-not-supported'; contractId: string }
   | { kind: 'no-embedded-spec'; contractId: string }
   | { kind: 'malformed-spec'; contractId: string; reason: string }
   | { kind: 'simulation-failed'; reason: string }
   | { kind: 'rpc-unreachable'; url: string; likelyCors: boolean }
+  | { kind: 'rpc-error'; code: number; message: string }
   | { kind: 'invalid-argument'; field: string; expected: string };
 
 export interface ParsedFunction {

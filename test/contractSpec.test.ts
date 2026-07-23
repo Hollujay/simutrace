@@ -39,10 +39,20 @@ describe('fetchContractSpec', () => {
       .rejects.toMatchObject({ kind: 'contract-not-found' });
   });
 
-  it('throws rpc-unreachable on network errors', async () => {
+  it('throws malformed-spec for Error instances from SDK response parsing (not network failures)', async () => {
     const server = mockServer();
     (server.getContractWasmByContractId as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error('Network error'),
+      new Error('Missing field: ledger entry data'),
+    );
+
+    await expect(fetchContractSpec(server, 'CCJZ5DGASBWQXR5MPFCJXMBI333XE5U3FSJTNQU7RIKE3P5GN2K2WYD5'))
+      .rejects.toMatchObject({ kind: 'malformed-spec', reason: 'Missing field: ledger entry data' });
+  });
+
+  it('throws rpc-unreachable for non-Error throws (true network-level failure)', async () => {
+    const server = mockServer();
+    (server.getContractWasmByContractId as ReturnType<typeof vi.fn>).mockRejectedValue(
+      'string error that is not an Error object',
     );
 
     await expect(fetchContractSpec(server, 'CCJZ5DGASBWQXR5MPFCJXMBI333XE5U3FSJTNQU7RIKE3P5GN2K2WYD5'))

@@ -71,16 +71,60 @@ export async function fetchContractSpec(
 ): Promise<ParsedFunction[]> {
   let wasmBuffer: Buffer;
   try {
+    console.log('fetchContractSpec: fetching wasm for contract', contractId);
     wasmBuffer = await server.getContractWasmByContractId(contractId);
+    console.log('fetchContractSpec: got wasm buffer, type=%s, length=%s, isBuffer=%s',
+      typeof wasmBuffer, wasmBuffer?.length, Buffer.isBuffer(wasmBuffer));
   } catch (err: unknown) {
-    if (typeof err === 'object' && err !== null && 'code' in err && (err as { code: number }).code === 404) {
-      throw { kind: 'contract-not-found' as const, contractId };
+    console.error('fetchContractSpec: error fetching contract wasm for', contractId, err);
+
+    if (typeof err === 'object' && err !== null) {
+      const obj = err as Record<string, unknown>;
+
+      // SDK returns { code: 404, message: '...' } when the contract or its WASM
+      // hash cannot be found on chain
+      if (obj.code === 404) {
+        throw { kind: 'contract-not-found' as const, contractId };
+      }
+
+      // SDK returns { code: 400, message: '...' } when the contract is a Stellar
+      // Asset Contract (SAC), which has no WASM blob to fetch.
+      if (obj.code === 400) {
+        throw { kind: 'sac-not-supported' as const, contractId };
+      }
+
+      // JSON-RPC error object (HTTP 200 but the response body contained an
+      // "error" field).  These have numeric codes like -32602 and a message.
+      if (typeof obj.code === 'number' && typeof obj.message === 'string') {
+        throw { kind: 'rpc-error' as const, code: obj.code, message: obj.message };
+      }
     }
+
+    // TypeError from parseRawLedgerEntries (missing key/xdr fields) or XDR
+    // decoding failures — these are response-parsing errors, not connectivity.
+    if (err instanceof TypeError) {
+      console.log('fetchContractSpec: TypeError caught, err=%O, proto=%s', err, Object.getPrototypeOf(err).constructor.name);
+      throw { kind: 'malformed-spec' as const, contractId, reason: err.message };
+    }
+
+    // Error instances from SDK response parsing (XDR decode, missing fields,
+    // unexpected shapes) — these are not network failures.
+    if (err instanceof Error) {
+      console.log('fetchContractSpec: Error caught, name=%s, message=%s, stack=%s',
+        err.name, err.message, err.stack?.split('\n').slice(0, 4).join('\n'));
+      throw { kind: 'malformed-spec' as const, contractId, reason: err.message };
+    }
+
+    // Genuine network errors (DNS failure, timeout, CORS, etc.) — typically
+    // thrown as TypeError in browsers, but we keep this as a final fallback
+    // for anything that isn't an Error at all.
     throw { kind: 'rpc-unreachable' as const, url: server.serverURL.toString(), likelyCors: false };
   }
 
   let spec: contract.Spec;
   try {
+    console.log('fetchContractSpec: calling Spec.fromWasm with wasm, length=%s, firstBytes=%s',
+      wasmBuffer?.length, wasmBuffer?.slice(0, 20)?.toString('hex'));
     spec = contract.Spec.fromWasm(wasmBuffer);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);

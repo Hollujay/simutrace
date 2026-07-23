@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { rpc, xdr } from '@stellar/stellar-sdk';
 import { getServer, NETWORKS } from './lib/rpc';
 import { fetchContractSpec } from './lib/contractSpec';
@@ -29,6 +29,7 @@ function App() {
   const [contractId, setContractId] = useState<string | null>(null);
   const [selectedFunction, setSelectedFunction] = useState<string | null>(null);
   const [status, setStatus] = useState<AppStatus>({ phase: 'idle' });
+  const fetchingRef = useRef(false);
 
   const handleNetworkChange = useCallback((newServer: rpc.Server, _network: NetworkConfig) => {
     setServer(newServer);
@@ -38,6 +39,8 @@ function App() {
   }, []);
 
   const handleFetch = useCallback(async (id: string) => {
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
     setContractId(id);
     setSelectedFunction(null);
     setStatus({ phase: 'loading-spec', contractId: id });
@@ -51,12 +54,16 @@ function App() {
         error.likelyCors = isLikelyCorsError(err);
       }
       setStatus({ phase: 'error', error });
+    } finally {
+      fetchingRef.current = false;
     }
   }, [server]);
 
   const handleSimulate = useCallback(async (args: xdr.ScVal[]) => {
     if (!contractId || !selectedFunction) return;
     if (status.phase !== 'spec-loaded') return;
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
 
     setStatus({ phase: 'simulating' });
 
@@ -96,6 +103,8 @@ function App() {
         error.likelyCors = isLikelyCorsError(err);
       }
       setStatus({ phase: 'error', error });
+    } finally {
+      fetchingRef.current = false;
     }
   }, [server, contractId, selectedFunction, status]);
 

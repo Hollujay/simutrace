@@ -17,6 +17,17 @@ export function ErrorMessage({ error }: ErrorMessageProps) {
         </div>
       );
 
+    case 'sac-not-supported':
+      return (
+        <div className="rounded border border-amber-800 bg-amber-950/30 px-4 py-3">
+          <p className="text-sm font-medium text-amber-400">SAC not supported</p>
+          <p className="mt-1 text-xs text-amber-300">
+            Contract <code className="font-mono">{error.contractId}</code> is a Stellar Asset
+            Contract (SAC), which isn't supported yet. Try a custom Soroban contract instead.
+          </p>
+        </div>
+      );
+
     case 'no-embedded-spec':
       return (
         <div className="rounded border border-amber-800 bg-amber-950/30 px-4 py-3">
@@ -56,6 +67,14 @@ export function ErrorMessage({ error }: ErrorMessageProps) {
               ? "This RPC endpoint isn't reachable from a browser (CORS). Try a provider that allows browser origins, or use testnet."
               : `Could not reach ${error.url}. Check the URL and network connection.`}
           </p>
+        </div>
+      );
+
+    case 'rpc-error':
+      return (
+        <div className="rounded border border-red-800 bg-red-950/30 px-4 py-3">
+          <p className="text-sm font-medium text-red-400">RPC error (code {error.code})</p>
+          <p className="mt-1 text-xs text-red-300">{error.message}</p>
         </div>
       );
 
