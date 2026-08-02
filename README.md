@@ -54,6 +54,8 @@ The simulation's footprint tells us which storage keys a call would touch. We re
 
 See CONTRIBUTING.md for setup and code style. Security issues should be reported privately, see SECURITY.md.
 
-## Maintainer
+## Maintainers
 
-@Hollujay.
+| Name | GitHub |
+|---|---|
+| Hollujay | [@Hollujay](https://github.com/Hollujay) |
