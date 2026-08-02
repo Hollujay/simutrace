@@ -132,4 +132,26 @@ describe('fetchContractSpec', () => {
     expect(result[0].inputs[0].name).toBe('to');
     expect(result[0].outputs[0].type).toBe('void');
   });
+
+  it('parses a spec in a browser-like environment without the Node Buffer global', async () => {
+    const server = mockServer();
+    (server.getContractWasmByContractId as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new TextEncoder().encode('valid-wasm'),
+    );
+    (contract.Spec.fromWasm as ReturnType<typeof vi.fn>).mockImplementation(() => {
+      throw new Error('Could not obtain contract spec from wasm');
+    });
+
+    // Reproduce the production browser environment, where the Node-only
+    // `Buffer` global does not exist. fetchContractSpec must not touch it.
+    const originalBuffer = (globalThis as { Buffer?: unknown }).Buffer;
+    (globalThis as { Buffer?: unknown }).Buffer = undefined;
+    try {
+      await expect(
+        fetchContractSpec(server, 'CCJZ5DGASBWQXR5MPFCJXMBI333XE5U3FSJTNQU7RIKE3P5GN2K2WYD5'),
+      ).rejects.toMatchObject({ kind: 'no-embedded-spec' });
+    } finally {
+      (globalThis as { Buffer?: unknown }).Buffer = originalBuffer;
+    }
+  });
 });

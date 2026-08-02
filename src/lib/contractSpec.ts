@@ -1,6 +1,16 @@
 import { contract, rpc, xdr } from '@stellar/stellar-sdk';
 import type { ParsedFunction } from './types';
 
+// The SDK types the fetched WASM as Node's Buffer (a Uint8Array subclass). Keep
+// the type derived from the SDK so this module never names the Node-only
+// `Buffer` global, which does not exist in browsers and previously crashed the
+// production build when this code ran.
+type ContractWasm = Awaited<ReturnType<rpc.Server['getContractWasmByContractId']>>;
+
+function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 function xdrTypeName(kind: xdr.ScSpecType): string {
   const name = kind.name;
   if (name.startsWith('scSpecType')) {
@@ -69,12 +79,12 @@ export async function fetchContractSpec(
   server: rpc.Server,
   contractId: string,
 ): Promise<ParsedFunction[]> {
-  let wasmBuffer: Buffer;
+  let wasmBuffer: ContractWasm;
   try {
     console.log('fetchContractSpec: fetching wasm for contract', contractId);
     wasmBuffer = await server.getContractWasmByContractId(contractId);
-    console.log('fetchContractSpec: got wasm buffer, type=%s, length=%s, isBuffer=%s',
-      typeof wasmBuffer, wasmBuffer?.length, Buffer.isBuffer(wasmBuffer));
+    console.log('fetchContractSpec: got wasm buffer, type=%s, length=%s, isUint8Array=%s',
+      typeof wasmBuffer, wasmBuffer?.length, wasmBuffer instanceof Uint8Array);
   } catch (err: unknown) {
     console.error('fetchContractSpec: error fetching contract wasm for', contractId, err);
 
@@ -124,7 +134,7 @@ export async function fetchContractSpec(
   let spec: contract.Spec;
   try {
     console.log('fetchContractSpec: calling Spec.fromWasm with wasm, length=%s, firstBytes=%s',
-      wasmBuffer?.length, wasmBuffer?.slice(0, 20)?.toString('hex'));
+      wasmBuffer?.length, bytesToHex(wasmBuffer.slice(0, 20)));
     spec = contract.Spec.fromWasm(wasmBuffer);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
