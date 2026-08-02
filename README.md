@@ -59,3 +59,9 @@ See CONTRIBUTING.md for setup and code style. Security issues should be reported
 | Name | GitHub |
 |---|---|
 | Hollujay | [@Hollujay](https://github.com/Hollujay) |
+
+## Contributors
+
+<a href="https://github.com/Hollujay/simutrace/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Hollujay/simutrace" />
+</a>
