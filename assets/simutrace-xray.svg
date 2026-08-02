@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="500" viewBox="0 0 1600 500">
+<rect width="1600" height="500" fill="#081018"/>
+<text x="120" y="120" font-family="Arial" font-size="70" font-weight="700" fill="#FFFFFF">SimuTrace</text>
+<text x="120" y="180" font-family="Arial" font-size="38" fill="#22D3EE">See what changes. Before it changes.</text>
+
+<text x="120" y="300" font-family="Arial" font-size="34" fill="#CBD5E1">Transaction</text>
+<circle cx="800" cy="250" r="90" fill="none" stroke="#22D3EE" stroke-width="8"/>
+<circle cx="800" cy="250" r="30" fill="#22D3EE"/>
+<text x="730" y="390" font-family="Arial" font-size="28" fill="#FFFFFF">SimuTrace</text>
+<text x="1220" y="300" font-family="Arial" font-size="34" fill="#CBD5E1">Storage Changes</text>
+
+<rect x="350" y="220" width="320" height="60" rx="30" fill="#0F172A"/>
+<rect x="930" y="220" width="320" height="60" rx="30" fill="#0F172A"/>
+
+<g opacity="0.8">
+<rect x="650" y="225" width="18" height="50" fill="#22D3EE"/>
+<rect x="685" y="225" width="18" height="50" fill="#67E8F9"/>
+<rect x="720" y="225" width="18" height="50" fill="#A5F3FC"/>
+<rect x="755" y="225" width="18" height="50" fill="#CFFAFE"/>
+<rect x="790" y="225" width="18" height="50" fill="#FFFFFF"/>
+<rect x="825" y="225" width="18" height="50" fill="#CFFAFE"/>
+<rect x="860" y="225" width="18" height="50" fill="#A5F3FC"/>
+<rect x="895" y="225" width="18" height="50" fill="#67E8F9"/>
+</g>
+</svg>

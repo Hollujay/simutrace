@@ -1,3 +1,5 @@
+![SimuTrace](assets/simutrace-xray.svg)
+
 # SimuTrace
 
 [![CI](https://github.com/Hollujay/simutrace/actions/workflows/ci.yml/badge.svg)](https://github.com/Hollujay/simutrace/actions/workflows/ci.yml)
