@@ -6,6 +6,8 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
+**Live:** [simutrace.vercel.app](https://simutrace.vercel.app)
+
 A browser-based tool that shows exactly how a Soroban smart contract call will change storage, before you submit a real transaction.
 
 ## What this is (and isn't)
