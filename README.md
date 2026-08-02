@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/Hollujay/simutrace/actions/workflows/ci.yml/badge.svg)](https://github.com/Hollujay/simutrace/actions/workflows/ci.yml)
 
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
 A browser-based tool that shows exactly how a Soroban smart contract call will change storage, before you submit a real transaction.
 
 ## What this is (and isn't)
