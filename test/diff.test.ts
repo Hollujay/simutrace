@@ -120,4 +120,11 @@ describe('diffStorage', () => {
     const result = diffStorage(before, after);
     expect(result[0].status).toBe('unchanged');
   });
+
+  it('returns no entries when a call touches no storage', () => {
+    const before = new Map<string, unknown>();
+    const after = new Map<string, unknown>();
+
+    expect(diffStorage(before, after)).toEqual([]);
+  });
 });
