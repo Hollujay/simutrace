@@ -71,6 +71,47 @@ Storage diff (1 changed of 1 total):
 - `0`: the simulation ran successfully. This is returned regardless of whether the diff is empty or non-empty, an empty diff from a genuine simulation is a valid result.
 - `1`: the simulation did not genuinely complete. This covers an unreachable RPC endpoint, an invalid contract or function, a simulation error reported by the RPC, invalid arguments, and invalid CLI usage. SimuTrace never prints an empty or misleading diff in place of a real failure; a non-zero exit always means the command has something specific to report.
 
+### JSON output schema
+
+`--json` prints one JSON object to stdout. On success:
+
+```jsonc
+{
+  "ok": true,
+  "contract": "C...",
+  "function": "increment",
+  "network": "testnet",
+  "restoreRequired": false,
+  "returnValue": 5,
+  "minResourceFee": "100",
+  "latestLedger": 12345,
+  "diff": [
+    { "key": "\"counter\"", "status": "changed", "before": 0, "after": 5 }
+  ]
+}
+```
+
+- `restoreRequired` is `true` when the contract data has expired and needs to be restored before it can be simulated; `diff` is empty in that case because no simulation of the actual call could run yet, not because nothing changed.
+- Each `diff` entry's `status` is one of `"added"`, `"changed"`, `"removed"`, `"unchanged"`.
+
+On failure:
+
+```jsonc
+{
+  "ok": false,
+  "contract": "C...",
+  "function": "increment",
+  "network": "testnet",
+  "error": {
+    "kind": "contract-not-found",
+    "message": "No contract found with ID C...",
+    "details": { "contractId": "C..." }
+  }
+}
+```
+
+- A failure object never has a `diff` field. `error.kind` matches one of the error kinds the web app also reports (`contract-not-found`, `sac-not-supported`, `no-embedded-spec`, `malformed-spec`, `simulation-failed`, `rpc-unreachable`, `rpc-error`, `invalid-argument`). `error.details` carries the rest of that error's fields for scripting.
+
 ## Architecture
 
 ```
