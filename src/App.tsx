@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { rpc, xdr } from '@stellar/stellar-sdk';
 import { getServer, NETWORKS } from './lib/rpc';
 import { fetchContractSpec } from './lib/contractSpec';
-import { simulateCall } from './lib/simulateCall';
+import { simulateCall, DEFAULT_SOURCE_ACCOUNT } from './lib/simulateCall';
 import { extractBeforeMap, extractAfterMap } from './lib/storageSnapshot';
 import { diffStorage } from './lib/diff';
 import { isLikelyCorsError } from './lib/corsDetection';
@@ -72,7 +72,7 @@ function App() {
         contractId,
         selectedFunction,
         args,
-        'GBPLQYVOHTZ4DBZN3IK26F3WA4Q4K7GYBVWKTHL6UZ75U7KJVGMCX2EM',
+        DEFAULT_SOURCE_ACCOUNT,
       );
 
       if (rpc.Api.isSimulationError(simResult)) {

@@ -8,12 +8,18 @@ import {
   Account,
 } from '@stellar/stellar-sdk';
 
+// Used by both the web app and the CLI as a stand-in source account when
+// simulating a call. Simulation does not require a funded or even real
+// account, so this constant is shared rather than reintroduced per caller.
+export const DEFAULT_SOURCE_ACCOUNT = 'GBPLQYVOHTZ4DBZN3IK26F3WA4Q4K7GYBVWKTHL6UZ75U7KJVGMCX2EM';
+
 export async function simulateCall(
   server: rpc.Server,
   contractId: string,
   functionName: string,
   args: xdr.ScVal[],
   sourceAccountId: string,
+  networkPassphrase: string = Networks.TESTNET,
 ) {
   const contract = new Contract(contractId);
   let sourceAccount: Account;
@@ -25,7 +31,7 @@ export async function simulateCall(
 
   const tx = new TransactionBuilder(sourceAccount, {
     fee: BASE_FEE,
-    networkPassphrase: Networks.TESTNET,
+    networkPassphrase,
   })
     .addOperation(contract.call(functionName, ...args))
     .setTimeout(30)
