@@ -35,6 +35,42 @@ Open the local URL, paste a deployed custom Soroban contract address on testnet,
 
 Not yet deployed anywhere public; run it locally for now.
 
+## CLI
+
+SimuTrace also ships a command-line entry point that runs the exact same simulation and diff logic as the browser app, useful for scripting or CI assertions.
+
+```bash
+npm run cli -- check --contract <id> --function <name> --network <testnet|mainnet> --args <key=value,...> [--json]
+```
+
+- `--contract` is the contract address to call.
+- `--function` is the function to simulate.
+- `--network` is `testnet` or `mainnet`. Testnet uses SimuTrace's built-in RPC endpoint. Mainnet has no default endpoint (there is no single official public one), so you must also pass `--rpc-url <url>` pointing at your own provider.
+- `--args` is a comma-separated list of `name=value` pairs, matching the function's parameter names. Values are parsed the same way the web app's call builder parses them (numbers, `true`/`false`, `G...`/`C...` addresses, and so on).
+- `--json` switches the output from human-readable text to the machine-readable schema documented below.
+
+Example (illustrative output, shaped like the fixture the test suite uses):
+
+```
+$ npm run cli -- check --contract CCJZ5DGASBWQXR5MPFCJXMBI333XE5U3FSJTNQU7RIKE3P5GN2K2WYD5 --function increment --network testnet --args amount=5
+Contract: CCJZ5DGASBWQXR5MPFCJXMBI333XE5U3FSJTNQU7RIKE3P5GN2K2WYD5
+Function: increment
+Network: testnet
+Cost: 100
+Return value: 5
+Ledger: 12345
+
+Storage diff (1 changed of 1 total):
+  [changed] "counter"
+    before: 0
+    after: 5
+```
+
+### Exit codes
+
+- `0`: the simulation ran successfully. This is returned regardless of whether the diff is empty or non-empty, an empty diff from a genuine simulation is a valid result.
+- `1`: the simulation did not genuinely complete. This covers an unreachable RPC endpoint, an invalid contract or function, a simulation error reported by the RPC, invalid arguments, and invalid CLI usage. SimuTrace never prints an empty or misleading diff in place of a real failure; a non-zero exit always means the command has something specific to report.
+
 ## Architecture
 
 ```
