@@ -8,6 +8,19 @@ import { parseArgValue } from './parseArgValue';
 import type { SimuTraceError } from '../lib/types';
 import type { CliOptions, CheckResult } from './types';
 
+function isSimuTraceError(err: unknown): err is SimuTraceError {
+  return typeof err === 'object' && err !== null && typeof (err as { kind?: unknown }).kind === 'string';
+}
+
+// simulateCall can throw a raw error from the RPC client (network failure,
+// unexpected response) that was never shaped into a SimuTraceError. Casting
+// that blindly would produce a result with no real `kind`, which would then
+// print as a misleading blank error instead of a genuine failure reason.
+function toSimuTraceError(err: unknown, rpcUrl: string): SimuTraceError {
+  if (isSimuTraceError(err)) return err;
+  return { kind: 'rpc-unreachable', url: rpcUrl, likelyCors: false };
+}
+
 function resolveRpcUrl(options: CliOptions): string | { error: SimuTraceError } {
   if (options.rpcUrl) return options.rpcUrl;
   if (options.network === 'testnet') return NETWORKS.testnet;
@@ -94,8 +107,7 @@ export async function runCheck(options: CliOptions): Promise<CheckResult> {
       NETWORK_PASSPHRASES[network],
     );
   } catch (err: unknown) {
-    const error = err as SimuTraceError;
-    return { ok: false, contractId, functionName, network, error };
+    return { ok: false, contractId, functionName, network, error: toSimuTraceError(err, rpcUrl) };
   }
 
   if (rpc.Api.isSimulationError(simResult)) {
