@@ -11,6 +11,15 @@ function bytesToHex(bytes: Uint8Array): string {
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
+// Debug tracing for this module only, gated so it never pollutes stdout: the
+// CLI's --json output must be the only thing on stdout for scripts to parse
+// it. Enable with SIMUTRACE_VERBOSE=1; always writes to stderr.
+function debugLog(...args: unknown[]): void {
+  if (typeof process !== 'undefined' && process.env?.SIMUTRACE_VERBOSE) {
+    console.error('[simutrace:debug]', ...args);
+  }
+}
+
 function xdrTypeName(kind: xdr.ScSpecType): string {
   const name = kind.name;
   if (name.startsWith('scSpecType')) {
@@ -81,12 +90,12 @@ export async function fetchContractSpec(
 ): Promise<ParsedFunction[]> {
   let wasmBuffer: ContractWasm;
   try {
-    console.log('fetchContractSpec: fetching wasm for contract', contractId);
+    debugLog('fetching wasm for contract', contractId);
     wasmBuffer = await server.getContractWasmByContractId(contractId);
-    console.log('fetchContractSpec: got wasm buffer, type=%s, length=%s, isUint8Array=%s',
+    debugLog('got wasm buffer, type=%s, length=%s, isUint8Array=%s',
       typeof wasmBuffer, wasmBuffer?.length, wasmBuffer instanceof Uint8Array);
   } catch (err: unknown) {
-    console.error('fetchContractSpec: error fetching contract wasm for', contractId, err);
+    debugLog('error fetching contract wasm for', contractId, err);
 
     if (typeof err === 'object' && err !== null) {
       const obj = err as Record<string, unknown>;
@@ -113,14 +122,14 @@ export async function fetchContractSpec(
     // TypeError from parseRawLedgerEntries (missing key/xdr fields) or XDR
     // decoding failures — these are response-parsing errors, not connectivity.
     if (err instanceof TypeError) {
-      console.log('fetchContractSpec: TypeError caught, err=%O, proto=%s', err, Object.getPrototypeOf(err).constructor.name);
+      debugLog('TypeError caught, err=%O, proto=%s', err, Object.getPrototypeOf(err).constructor.name);
       throw { kind: 'malformed-spec' as const, contractId, reason: err.message };
     }
 
     // Error instances from SDK response parsing (XDR decode, missing fields,
     // unexpected shapes) — these are not network failures.
     if (err instanceof Error) {
-      console.log('fetchContractSpec: Error caught, name=%s, message=%s, stack=%s',
+      debugLog('Error caught, name=%s, message=%s, stack=%s',
         err.name, err.message, err.stack?.split('\n').slice(0, 4).join('\n'));
       throw { kind: 'malformed-spec' as const, contractId, reason: err.message };
     }
@@ -133,7 +142,7 @@ export async function fetchContractSpec(
 
   let spec: contract.Spec;
   try {
-    console.log('fetchContractSpec: calling Spec.fromWasm with wasm, length=%s, firstBytes=%s',
+    debugLog('calling Spec.fromWasm with wasm, length=%s, firstBytes=%s',
       wasmBuffer?.length, bytesToHex(wasmBuffer.slice(0, 20)));
     spec = contract.Spec.fromWasm(wasmBuffer);
   } catch (err: unknown) {
