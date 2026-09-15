@@ -49,21 +49,20 @@ npm run cli -- check --contract <id> --function <name> --network <testnet|mainne
 
 Full flag reference and JSON schema also live on the [docs site](https://hollujay.github.io/simutrace/reference).
 
-Example (illustrative output, shaped like the fixture the test suite uses):
+Example (real output, against a deployed testnet contract):
 
 ```
-$ npm run cli -- check --contract CCJZ5DGASBWQXR5MPFCJXMBI333XE5U3FSJTNQU7RIKE3P5GN2K2WYD5 --function increment --network testnet --args amount=5
-Contract: CCJZ5DGASBWQXR5MPFCJXMBI333XE5U3FSJTNQU7RIKE3P5GN2K2WYD5
+$ npm run cli -- check --contract CACI5YOIX2R23F6LZTGUA6ADLZQY6BEVBLIXPDQBMGJ2W6QXIJSKDHHV --function increment --network testnet
+Contract: CACI5YOIX2R23F6LZTGUA6ADLZQY6BEVBLIXPDQBMGJ2W6QXIJSKDHHV
 Function: increment
 Network: testnet
-Cost: 100
-Return value: 5
-Ledger: 12345
+Cost: 18332
+Return value: 1
+Ledger: 4692217
 
 Storage diff (1 changed of 1 total):
-  [changed] "counter"
-    before: 0
-    after: 5
+  [added] "COUNTER"
+    after: 1
 ```
 
 ### Exit codes
@@ -78,15 +77,15 @@ Storage diff (1 changed of 1 total):
 ```jsonc
 {
   "ok": true,
-  "contract": "C...",
+  "contract": "CACI5YOIX2R23F6LZTGUA6ADLZQY6BEVBLIXPDQBMGJ2W6QXIJSKDHHV",
   "function": "increment",
   "network": "testnet",
   "restoreRequired": false,
-  "returnValue": 5,
-  "minResourceFee": "100",
-  "latestLedger": 12345,
+  "returnValue": 1,
+  "minResourceFee": "18332",
+  "latestLedger": 4692217,
   "diff": [
-    { "key": "\"counter\"", "status": "changed", "before": 0, "after": 5 }
+    { "key": "\"COUNTER\"", "status": "added", "before": null, "after": 1 }
   ]
 }
 ```
@@ -99,13 +98,16 @@ On failure:
 ```jsonc
 {
   "ok": false,
-  "contract": "C...",
-  "function": "increment",
+  "contract": "CBAD00000000000000000000000000000000000000000000000000000",
+  "function": "foo",
   "network": "testnet",
   "error": {
-    "kind": "contract-not-found",
-    "message": "No contract found with ID C...",
-    "details": { "contractId": "C..." }
+    "kind": "malformed-spec",
+    "message": "Failed to parse contract spec: Invalid contract ID: CBAD00000000000000000000000000000000000000000000000000000",
+    "details": {
+      "contractId": "CBAD00000000000000000000000000000000000000000000000000000",
+      "reason": "Invalid contract ID: CBAD00000000000000000000000000000000000000000000000000000"
+    }
   }
 }
 ```
