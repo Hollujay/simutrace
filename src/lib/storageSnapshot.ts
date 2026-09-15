@@ -1,20 +1,29 @@
 import { rpc, xdr, scValToNative } from '@stellar/stellar-sdk';
 
-function ledgerEntryToStorageValue(entry: xdr.LedgerEntry): { key: string; value: unknown } | null {
-  const data = entry.data();
-  if (data.switch() !== xdr.LedgerEntryType.contractData()) return null;
-  const contractData = data.contractData();
-  const key = scValToNative(contractData.key());
-  const value = scValToNative(contractData.val());
-  return { key: JSON.stringify(key), value };
+// The contract instance's own ledger entry doesn't hold a plain ScVal: its
+// value is an ScContractInstance struct bundling the executable plus every
+// key this contract has written under instance storage. scValToNative can't
+// decode that struct, so we unwrap it here and surface each of its storage
+// entries individually, keyed the same way a persistent/temporary entry
+// would be.
+function contractInstanceStorageValues(instance: xdr.ScContractInstance): { key: string; value: unknown }[] {
+  const storage = instance.storage() ?? [];
+  return storage.map((entry) => ({
+    key: JSON.stringify(scValToNative(entry.key())),
+    value: scValToNative(entry.val()),
+  }));
 }
 
-function ledgerEntryDataToStorageValue(data: xdr.LedgerEntryData): { key: string; value: unknown } | null {
-  if (data.switch() !== xdr.LedgerEntryType.contractData()) return null;
+function ledgerEntryDataToStorageValues(data: xdr.LedgerEntryData): { key: string; value: unknown }[] {
+  if (data.switch() !== xdr.LedgerEntryType.contractData()) return [];
   const contractData = data.contractData();
+  const val = contractData.val();
+  if (val.switch().value === xdr.ScValType.scvContractInstance().value) {
+    return contractInstanceStorageValues(val.instance());
+  }
   const key = scValToNative(contractData.key());
-  const value = scValToNative(contractData.val());
-  return { key: JSON.stringify(key), value };
+  const value = scValToNative(val);
+  return [{ key: JSON.stringify(key), value }];
 }
 
 export function extractBeforeMap(
@@ -23,8 +32,9 @@ export function extractBeforeMap(
   const map = new Map<string, unknown>();
   for (const change of stateChanges) {
     if (!change.before) continue;
-    const storage = ledgerEntryToStorageValue(change.before);
-    if (storage) map.set(storage.key, storage.value);
+    for (const storage of ledgerEntryDataToStorageValues(change.before.data())) {
+      map.set(storage.key, storage.value);
+    }
   }
   return map;
 }
@@ -35,8 +45,9 @@ export function extractAfterMap(
   const map = new Map<string, unknown>();
   for (const change of stateChanges) {
     if (!change.after) continue;
-    const storage = ledgerEntryToStorageValue(change.after);
-    if (storage) map.set(storage.key, storage.value);
+    for (const storage of ledgerEntryDataToStorageValues(change.after.data())) {
+      map.set(storage.key, storage.value);
+    }
   }
   return map;
 }
@@ -54,8 +65,9 @@ export async function fetchBeforeFromLedger(
   const response = await server.getLedgerEntries(...ledgerKeys);
   const map = new Map<string, unknown>();
   for (const entry of response.entries) {
-    const storage = ledgerEntryDataToStorageValue(entry.val);
-    if (storage) map.set(storage.key, storage.value);
+    for (const storage of ledgerEntryDataToStorageValues(entry.val)) {
+      map.set(storage.key, storage.value);
+    }
   }
   return map;
 }

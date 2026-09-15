@@ -40,16 +40,26 @@ export function installFixtureSpec() {
 }
 
 // A fake xdr.LedgerEntry whose contractData key/val are plain JS values
-// rather than real ScVal instances. Pairs with the scValToNative mock in
-// each test file, which must be set to an identity function for this to
-// decode correctly.
+// rather than real ScVal instances. `val()` carries a `.switch()` returning
+// a plain object shaped like a real (non-instance) ScVal type, the same
+// convention contractSpec.test.ts uses for spec nodes, so storageSnapshot.ts
+// takes the ordinary decode path instead of the contract-instance one. The
+// actual payload is tucked under FIXTURE_RAW_VALUE_KEY; each test file's
+// scValToNative mock must unwrap it (see fixtureScValToNative below) — it's
+// duplicated inline per file rather than imported, since vi.mock factories
+// are hoisted above other imports and can't reference them.
+export const FIXTURE_RAW_VALUE_KEY = '__fixtureRawValue';
+
 function fakeLedgerEntry(key: string, value: unknown) {
   return {
     data: () => ({
       switch: () => xdr.LedgerEntryType.contractData(),
       contractData: () => ({
         key: () => key,
-        val: () => value,
+        val: () => ({
+          switch: () => ({ name: 'scvU32', value: xdr.ScValType.scvU32().value }),
+          [FIXTURE_RAW_VALUE_KEY]: value,
+        }),
       }),
     }),
   } as unknown as xdr.LedgerEntry;

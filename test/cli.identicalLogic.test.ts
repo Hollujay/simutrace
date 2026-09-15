@@ -22,7 +22,11 @@ vi.mock('@stellar/stellar-sdk', async (importOriginal) => {
       ...actual.contract,
       Spec: { ...actual.contract.Spec, fromWasm: vi.fn() },
     },
-    scValToNative: vi.fn((value: unknown) => value),
+    scValToNative: vi.fn((value: unknown) =>
+      value && typeof value === 'object' && '__fixtureRawValue' in value
+        ? (value as { __fixtureRawValue: unknown }).__fixtureRawValue
+        : value,
+    ),
   };
 });
 
