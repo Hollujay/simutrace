@@ -1,0 +1,30 @@
+name: Feature request
+description: Propose a change or addition to SimuTrace
+labels: [enhancement]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What's the gap, and why does it matter?
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: Approach
+      description: Rough implementation direction, if you have one
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: Checklist of what "done" looks like
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: input
+    id: tech-stack
+    attributes:
+      label: Tech Stack
+      description: Relevant languages/libraries touched by this change
