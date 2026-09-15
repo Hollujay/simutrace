@@ -133,11 +133,15 @@ The simulation's footprint tells us which storage keys a call would touch. We re
 
 See CONTRIBUTING.md for setup and code style. Security issues should be reported privately, see SECURITY.md.
 
+## Community
+
+Questions or discussion: reach out on Telegram, [@Hollujay21](https://t.me/Hollujay21).
+
 ## Maintainers
 
-| Name | GitHub |
-|---|---|
-| Hollujay | [@Hollujay](https://github.com/Hollujay) |
+| Name | GitHub | Telegram |
+|---|---|---|
+| Hollujay | [@Hollujay](https://github.com/Hollujay) | [@Hollujay21](https://t.me/Hollujay21) |
 
 ## Contributors
 
