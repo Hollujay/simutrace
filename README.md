@@ -8,8 +8,6 @@
 
 A browser-based tool that shows exactly how a Soroban smart contract call will change storage, before you submit a real transaction.
 
-![Simulating an increment call and viewing the storage diff](assets/simutrace-demo.gif)
-
 ## What this is (and isn't)
 
 SimuTrace exists for one job: take a specific function call on a Soroban contract, simulate it, and show a clear before/after diff of the storage keys that call actually touches.
