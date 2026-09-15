@@ -1,4 +1,7 @@
-# Architecture
+---
+title: Architecture
+---
+{% include nav.html %}
 
 SimuTrace takes a specific function call on a Soroban contract, simulates it, and shows a before/after diff of the storage keys that call actually touches.
 
@@ -24,3 +27,7 @@ ContractInput -> contractSpec.ts -> FunctionList -> CallBuilder
 The simulation result already contains the post-call values for the same footprint. `diff.ts` compares the pre-call snapshot to the post-call values, key by key, to produce a `StorageDiff`.
 
 This footprint-based approach is why SimuTrace can only diff the keys a specific call touches, and not a contract's full storage: the RPC simulation only reports the footprint for the call it was asked to simulate. There is no general mechanism here for enumerating or snapshotting every storage key a contract owns, only the ones a given function call would read or write. Browsing a contract's entire storage is a different problem (see Stellar Lab's Contract Explorer), and is explicitly out of scope, as noted in the README.
+
+## Instance storage is a special case
+
+A contract's `env.storage().instance()` data — the common pattern for something like a counter — isn't stored as its own plain ledger entry. It's bundled into the contract's single instance entry alongside the contract's executable, as an `ScContractInstance` struct. `storageSnapshot.ts` unwraps that struct into its individual key/value pairs before handing them to `diff.ts`, so an instance-storage key diffs the same way a persistent or temporary storage key does.
