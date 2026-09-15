@@ -1,4 +1,4 @@
-![SimuTrace](assets/simutrace-xray.svg)
+![SimuTrace](assets/simutrace-banner.svg)
 
 # SimuTrace
 
