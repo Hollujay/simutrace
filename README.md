@@ -33,7 +33,7 @@ npm run dev
 
 Open the local URL, paste a deployed custom Soroban contract address on testnet, pick a function, fill in its arguments, and simulate. If the call writes to storage, you'll see each affected key with its value before and after.
 
-Not yet deployed anywhere public; run it locally for now.
+Or skip the setup and use the live version at [simutrace.vercel.app](https://simutrace.vercel.app).
 
 ## CLI
 
