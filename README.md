@@ -2,9 +2,9 @@
 
 # SimuTrace
 
-[![CI](https://github.com/Hollujay/simutrace/actions/workflows/ci.yml/badge.svg)](https://github.com/Hollujay/simutrace/actions/workflows/ci.yml) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE) [![TypeScript](https://img.shields.io/badge/TypeScript-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/) [![demo](https://img.shields.io/badge/demo-live-brightgreen)](https://simutrace.vercel.app)
+[![CI](https://github.com/Hollujay/simutrace/actions/workflows/ci.yml/badge.svg)](https://github.com/Hollujay/simutrace/actions/workflows/ci.yml) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE) [![TypeScript](https://img.shields.io/badge/TypeScript-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/) [![demo](https://img.shields.io/badge/demo-live-brightgreen)](https://simutrace.vercel.app) [![docs](https://img.shields.io/badge/docs-online-blue)](https://hollujay.github.io/simutrace/)
 
-**Live:** [simutrace.vercel.app](https://simutrace.vercel.app)
+**Live:** [simutrace.vercel.app](https://simutrace.vercel.app) · **Docs:** [hollujay.github.io/simutrace](https://hollujay.github.io/simutrace/)
 
 A browser-based tool that shows exactly how a Soroban smart contract call will change storage, before you submit a real transaction.
 
@@ -46,6 +46,8 @@ npm run cli -- check --contract <id> --function <name> --network <testnet|mainne
 - `--network` is `testnet` or `mainnet`. Testnet uses SimuTrace's built-in RPC endpoint. Mainnet has no default endpoint (there is no single official public one), so you must also pass `--rpc-url <url>` pointing at your own provider.
 - `--args` is a comma-separated list of `name=value` pairs, matching the function's parameter names. Values are parsed the same way the web app's call builder parses them (numbers, `true`/`false`, `G...`/`C...` addresses, and so on).
 - `--json` switches the output from human-readable text to the machine-readable schema documented below.
+
+Full flag reference and JSON schema also live on the [docs site](https://hollujay.github.io/simutrace/reference).
 
 Example (illustrative output, shaped like the fixture the test suite uses):
 
@@ -128,6 +130,8 @@ ContractInput -> contractSpec.ts -> FunctionList -> CallBuilder
 ```
 
 The simulation's footprint tells us which storage keys a call would touch. We read those keys' current values before simulating, then diff them against the values the simulation returns. This is why only the keys a specific call touches can be diffed, not a contract's full storage.
+
+See the [Architecture](https://hollujay.github.io/simutrace/architecture) and [Threat Model](https://hollujay.github.io/simutrace/threat-model) pages on the docs site for more detail.
 
 ## Contributing
 
